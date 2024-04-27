@@ -1,0 +1,46 @@
+.input-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.description-input {
+    height: 6em;
+    width: 100%;
+    resize: vertical;
+}
+
+.input-wrapper {
+    width: 100%;
+    padding: 5px 10px;
+    text-align: left;
+}
+
+.input-wrapper label {
+    text-align: left;
+}
+
+.input-wrapper input {
+    text-align: left;
+    width: 100%;
+}
+
+.input-wrapper select {
+    text-align: left;
+    width: 100%;
+}
+
+.button-wrapper {
+    margin: 5px auto;
+}
+
+.button-wrapper button {
+    display: inline-block;
+    margin: 0 20px;
+    padding: 5px 25px;
+}
+
+@media only screen and (max-width: 500px) {
+    .input-grid {
+        grid-template-columns: 1fr;
+    }
+}

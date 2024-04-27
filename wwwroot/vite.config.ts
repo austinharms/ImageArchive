@@ -6,6 +6,12 @@ export default defineConfig({
   plugins: [react()],
   root: "wwwroot",
   build: {
-    outDir: "../build/wwwroot"
+    outDir: "../build/wwwroot",
+    emptyOutDir: true
+  },
+  css: {
+    modules: {
+      localsConvention: "camelCaseOnly"
+    }
   }
 });

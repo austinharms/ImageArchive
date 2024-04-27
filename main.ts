@@ -24,6 +24,10 @@ import { existsSync, constants as FS_CONST } from "fs";
     const app: Express = express();
     const port: number = config.HTTP_PORT || 80;
 
+    app.use((req: Request, res: Response, next: NextFunction) => {
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        next();
+    });
     app.use("/api/v1", CreateAPIRouter(db));
     // Redirect to correct base address
     app.get(["/", "/index", "/index.*"], (req: Request, res: Response) => res.redirect("/app"));

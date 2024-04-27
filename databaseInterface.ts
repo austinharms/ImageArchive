@@ -2,18 +2,17 @@ export type ArchiveEntryId = number;
 export type ArchiveCollectionId = number;
 export const DefaultArchiveCollectionId: ArchiveCollectionId = 0;
 
-export interface CreateArchiveCollectionParams {
+export interface ArchiveCollectionParams {
     name: string,
 };
 
-export interface DatabaseCollectionInstance extends CreateArchiveCollectionParams {
-    id: ArchiveCollectionId,
-    dateCreated: Date,
+export interface ArchiveCollection {
+    readonly id: ArchiveCollectionId,
+    readonly name: string
+    readonly dateCreated: Date,
 };
 
-export type ArchiveCollection = Readonly<DatabaseCollectionInstance>;
-
-export interface CreateArchiveEntryParams {
+export interface ArchiveEntryParams {
     title: string,
     description: string,
     donor: string,
@@ -23,19 +22,26 @@ export interface CreateArchiveEntryParams {
     collectionId: ArchiveCollectionId,
     physicalLocation: string,
     mediaType: string,
-    file?: string,
+    image?: string,
 };
 
-export interface DatabaseEntryInstance extends CreateArchiveEntryParams {
-    id: ArchiveEntryId,
-    file: string,
-    dateAdded: Date,
-    dateLastModified: Date,
+export interface ArchiveEntry {
+    readonly id: ArchiveEntryId,
+    readonly title: string,
+    readonly description: string,
+    readonly donor: string,
+    readonly yearCreated: string,
+    readonly colour: string,
+    readonly size: string,
+    readonly collectionId: ArchiveCollectionId,
+    readonly physicalLocation: string,
+    readonly mediaType: string,
+    readonly image: string,
+    readonly dateAdded: Date,
+    readonly dateLastModified: Date,
 };
 
-export type ArchiveEntry = Readonly<DatabaseEntryInstance>;
-
-export interface EntrySearchParameters {
+export interface ArchiveSearchParameters {
     title: string,
     description: string,
     donor: string,
@@ -55,7 +61,7 @@ function ValidateParam(object: any, key: string, expectedType: string, allowFals
     if (!allowFalsy && !object[key] || expectedType === "number" && !isFinite(object[key])) throw new Error(`${key} has invalid value`);
 }
 
-export function ValidateCreateArchiveCollectionParams(params: CreateArchiveCollectionParams) : true | Error {
+export function ValidateArchiveCollectionParams(params: ArchiveCollectionParams) : true | Error {
     try {
         ValidateParam(params, "name", "string");
         return true;
@@ -64,7 +70,7 @@ export function ValidateCreateArchiveCollectionParams(params: CreateArchiveColle
     }
 };
 
-export function ValidateCreateArchiveEntryParams(params: CreateArchiveEntryParams) : true | Error {
+export function ValidateArchiveEntryParams(params: ArchiveEntryParams) : true | Error {
     try {
         ValidateParam(params, "collectionId", "number", true);
         ValidateParam(params, "colour", "string", true);
@@ -82,18 +88,19 @@ export function ValidateCreateArchiveEntryParams(params: CreateArchiveEntryParam
 };
 
 export interface DatabaseService {
-    createEntry: (entry: CreateArchiveEntryParams) => Promise<ArchiveEntry>,
-    editEntry: (id: ArchiveEntryId, entry: CreateArchiveEntryParams) => Promise<ArchiveEntry>,
+    createEntry: (entry: ArchiveEntryParams) => Promise<ArchiveEntry>,
+    editEntry: (id: ArchiveEntryId, entry: ArchiveEntryParams) => Promise<ArchiveEntry>,
     deleteEntry: (id: ArchiveEntryId) => Promise<void>,
     getEntry: (id: ArchiveEntryId) => Promise<ArchiveEntry | null>,
     // count is expected to default to the total number of entries and offset should be 0 
     getEntries: (count?: number, offset?: number) => Promise<ResultArray<ArchiveEntry>>,
     // count is expected to default to the total number of entries and offset should be 0 
-    searchEntries: (params: EntrySearchParameters, count?: number, offset?: number) => Promise<ResultArray<ArchiveEntry>>,
-    createCollection: (collection: CreateArchiveCollectionParams) => Promise<ArchiveCollection>,
-    editCollection: (id: ArchiveCollectionId, collection: CreateArchiveCollectionParams) => Promise<ArchiveCollection>,
+    searchEntries: (params: ArchiveSearchParameters, count?: number, offset?: number) => Promise<ResultArray<ArchiveEntry>>,
+    createCollection: (collection: ArchiveCollectionParams) => Promise<ArchiveCollection>,
+    editCollection: (id: ArchiveCollectionId, collection: ArchiveCollectionParams) => Promise<ArchiveCollection>,
     deleteCollection: (id: ArchiveCollectionId) => Promise<void>,
     getCollection: (id: ArchiveCollectionId) => Promise<ArchiveCollection | null>,
     // count is expected to default to the total number of entries and offset should be 0 
     getCollections: (count?: number, offset?: number) => Promise<ResultArray<ArchiveCollection>>,
+    getEntriesByCollection: (id: ArchiveCollectionId, count?: number, offset?: number) => Promise<ResultArray<ArchiveEntry>>,
 };

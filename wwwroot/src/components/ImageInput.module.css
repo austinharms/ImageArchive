@@ -1,0 +1,74 @@
+.hidden-input {
+    position: fixed;
+    top: -100em;
+}
+
+.pad-contents {
+    padding: 10px;
+    margin: 5px;
+}
+
+.center-contents {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    flex-direction: column;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    border-radius: 20px;
+    border: 3px darkgray dashed;
+    padding: 10px;
+    z-index: 2;
+    color: rgba(255, 255, 255, 0.87);
+}
+
+.hover-overlay {
+    visibility: hidden;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 10px;
+    z-index: 2;
+}
+
+/* Hack to make hover work as expected with position: absolute  */
+.center-contents:hover .hover-overlay {
+    visibility: visible;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    border-radius: 20px;
+    border: 3px darkgray dashed;
+    padding: 10px;
+    z-index: 2;
+    color: rgba(255, 255, 255, 0.87);;
+}
+
+.image-canvas {
+    display: block;
+    max-width: 100%;
+    max-height: 50vh;
+    width: auto;
+    height: auto;
+    margin: auto;
+}
+
+.empty-canvas {
+    display: block;
+    width: 100%;
+    height: 30vh;
+}

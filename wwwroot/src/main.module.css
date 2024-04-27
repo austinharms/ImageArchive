@@ -1,0 +1,6 @@
+.content-wrapper {
+    max-width: 1024px;
+    margin: auto;
+    position: relative;
+    min-width: 320px;
+}

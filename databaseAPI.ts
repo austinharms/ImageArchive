@@ -1,6 +1,6 @@
 import express, { Router, Request, Response, NextFunction } from "express";
 import multer from "multer";
-import { ArchiveEntry, CreateArchiveCollectionParams, CreateArchiveEntryParams, DatabaseCollectionInstance, DatabaseEntryInstance, DatabaseService, DefaultArchiveCollectionId, EntrySearchParameters, ValidateCreateArchiveCollectionParams, ValidateCreateArchiveEntryParams } from "./databaseInterface";
+import { ArchiveEntry, ArchiveCollectionParams, ArchiveEntryParams, ArchiveCollection, DatabaseService, DefaultArchiveCollectionId, ArchiveSearchParameters, ValidateArchiveCollectionParams, ValidateArchiveEntryParams } from "./databaseInterface";
 import { writeFile, rm } from "fs/promises";
 import path from "path";
 import config from "./config";
@@ -22,8 +22,8 @@ function getImageFilepath(filename: string) {
     return path.join(config.IMAGE_PATH, filename);
 }
 
-function CreateArchiveEntryFromBody(body: any): CreateArchiveEntryParams {
-    const entry: CreateArchiveEntryParams = {
+function CreateArchiveEntryFromBody(body: any): ArchiveEntryParams {
+    const entry: ArchiveEntryParams = {
         title: body.title,
         description: body.description,
         donor: body.donor,
@@ -38,17 +38,17 @@ function CreateArchiveEntryFromBody(body: any): CreateArchiveEntryParams {
     return entry;
 }
 
-function CreateArchiveCollectionFromBody(body: any): CreateArchiveCollectionParams {
-    const collection: CreateArchiveCollectionParams = {
+function CreateArchiveCollectionFromBody(body: any): ArchiveCollectionParams {
+    const collection: ArchiveCollectionParams = {
         name: body.name
     };
 
     return collection;
 }
 
-function CreateEntrySearchParametersFromBody(body: any): EntrySearchParameters {
-    const baseSearchParams: EntrySearchParameters = { title: "", description: "", donor: "", mediaType: "", collection: "", ...body };
-    const search: EntrySearchParameters = {
+function CreateEntrySearchParametersFromBody(body: any): ArchiveSearchParameters {
+    const baseSearchParams: ArchiveSearchParameters = { title: "", description: "", donor: "", mediaType: "", collection: "", ...body };
+    const search: ArchiveSearchParameters = {
         title: baseSearchParams.title,
         description: baseSearchParams.description,
         donor: baseSearchParams.donor,
@@ -68,7 +68,7 @@ export function CreateAPIRouter(database: DatabaseService): Router {
 
     router.post("/entry", imageParser, (req: Request, res: Response, next: NextFunction) => (async () => {
         const entry = CreateArchiveEntryFromBody(req.body);
-        if (ValidateCreateArchiveEntryParams(entry) !== true) {
+        if (ValidateArchiveEntryParams(entry) !== true) {
             res.status(400).send("Bad Request");
             return;
         }
@@ -80,10 +80,10 @@ export function CreateAPIRouter(database: DatabaseService): Router {
         }
 
         if (req.file) {
-            entry.file = generateImageFilename();
-            await writeFile(getImageFilepath(entry.file), req.file.buffer);
+            entry.image = generateImageFilename();
+            await writeFile(getImageFilepath(entry.image), req.file.buffer);
         } else {
-            entry.file = "";
+            entry.image = "";
         }
 
         try {
@@ -91,7 +91,7 @@ export function CreateAPIRouter(database: DatabaseService): Router {
             res.status(200).send(JSON.stringify({ ...dbEntry, collection }));
         } catch (e) {
             // Try to clean up file on error
-            rm(getImageFilepath(entry.file), { "recursive": false }).catch(e => console.error(`Failed to delete image file: "${getImageFilepath(entry.file!)}"`, e));
+            rm(getImageFilepath(entry.image), { "recursive": false }).catch(e => console.error(`Failed to delete image file: "${getImageFilepath(entry.image!)}"`, e));
             throw e;
         }
     })().catch(next));
@@ -118,7 +118,7 @@ export function CreateAPIRouter(database: DatabaseService): Router {
         const offset = parseFiniteInt(req.query.offset);
         const entries = await database.getEntries(count, offset);
         const collectionIds = Array.from(new Set(entries.results.map(e => e.collectionId)));
-        const collections = (await Promise.all(collectionIds.map(database.getCollection))).reduce((acc: any, col: DatabaseCollectionInstance | null) => {
+        const collections = (await Promise.all(collectionIds.map(database.getCollection))).reduce((acc: any, col: ArchiveCollection | null) => {
             if (col == null) throw new Error("Entry collection was invalid");
             acc[col.id] = col;
             return acc;
@@ -131,7 +131,7 @@ export function CreateAPIRouter(database: DatabaseService): Router {
     router.patch("/entry/:id", imageParser, (req: Request, res: Response, next: NextFunction) => (async () => {
         const id = parseFiniteInt(req.params.id);
         const entry = CreateArchiveEntryFromBody(req.body);
-        if (ValidateCreateArchiveEntryParams(entry) !== true || id === undefined) {
+        if (ValidateArchiveEntryParams(entry) !== true || id === undefined) {
             res.status(400).send("Bad Request");
             return;
         }
@@ -143,10 +143,10 @@ export function CreateAPIRouter(database: DatabaseService): Router {
         }
 
         if (req.file) {
-            entry.file = generateImageFilename();
-            await writeFile(getImageFilepath(entry.file), req.file.buffer);
+            entry.image = generateImageFilename();
+            await writeFile(getImageFilepath(entry.image), req.file.buffer);
         } else {
-            entry.file = "";
+            entry.image = "";
         }
 
         let dbEntry = null;
@@ -154,13 +154,13 @@ export function CreateAPIRouter(database: DatabaseService): Router {
             dbEntry = await database.editEntry(id, entry);
         } catch (e) {
             // Try to clean up file on error
-            await rm(getImageFilepath(entry.file), { "recursive": false }).catch(e => console.error(`Failed to delete image file: "${getImageFilepath(entry.file!)}"`, e));
+            await rm(getImageFilepath(entry.image), { "recursive": false }).catch(e => console.error(`Failed to delete image file: "${getImageFilepath(entry.image!)}"`, e));
             throw e;
         }
 
-        if (oldEntry.file) {
+        if (oldEntry.image) {
             // Delete original file that is no longer referenced 
-            await rm(getImageFilepath(oldEntry.file), { "recursive": false }).catch(e => console.error(`Failed to delete image file: "${getImageFilepath(oldEntry.file!)}"`, e));
+            await rm(getImageFilepath(oldEntry.image), { "recursive": false }).catch(e => console.error(`Failed to delete image file: "${getImageFilepath(oldEntry.image)}"`, e));
         }
 
         res.status(200).send(JSON.stringify({ ...dbEntry, collection }));
@@ -180,8 +180,8 @@ export function CreateAPIRouter(database: DatabaseService): Router {
         }
 
         await database.deleteEntry(id);
-        if (entry.file) {
-            await rm(getImageFilepath(entry.file), { "recursive": false }).catch(e => console.error(`Failed to delete image file: "${getImageFilepath(entry.file!)}"`, e));
+        if (entry.image) {
+            await rm(getImageFilepath(entry.image), { "recursive": false }).catch(e => console.error(`Failed to delete image file: "${getImageFilepath(entry.image)}"`, e));
         }
 
         res.status(200).send("ok");
@@ -189,7 +189,7 @@ export function CreateAPIRouter(database: DatabaseService): Router {
 
     router.post("/collection", fieldParser, (req: Request, res: Response, next: NextFunction) => (async () => {
         const collection = CreateArchiveCollectionFromBody(req.body);
-        if (ValidateCreateArchiveCollectionParams(collection) !== true) {
+        if (ValidateArchiveCollectionParams(collection) !== true) {
             res.status(400).send("Bad Request");
             return;
         }
@@ -213,6 +213,26 @@ export function CreateAPIRouter(database: DatabaseService): Router {
         }
     })().catch(next));
 
+    router.get("/collection/:id/entries", queryParser, (req: Request, res: Response, next: NextFunction) => (async () => {
+        const count = parseFiniteInt(req.query.count);
+        const offset = parseFiniteInt(req.query.offset);
+        const id = parseFiniteInt(req.params.id);
+        if (id === undefined) {
+            res.status(400).send("Bad Request");
+            return;
+        }
+
+        const collection = await database.getCollection(id);
+        if (collection === null) {
+            res.status(400).send("Bad Request");
+            return;
+        }
+
+        const entries = await database.getEntriesByCollection(id, count, offset);
+        entries.results = entries.results.map(entry => ({ ...entry, collection }));
+        res.status(200).send(JSON.stringify(entries));
+    })().catch(next));
+
     router.get("/collections", queryParser, (req: Request, res: Response, next: NextFunction) => (async () => {
         const count = parseFiniteInt(req.query.count);
         const offset = parseFiniteInt(req.query.offset);
@@ -223,7 +243,7 @@ export function CreateAPIRouter(database: DatabaseService): Router {
     router.patch("/collection/:id", (req: Request, res: Response, next: NextFunction) => (async () => {
         const id = parseFiniteInt(req.params.id);
         const collection = CreateArchiveCollectionFromBody(req.body);
-        if (ValidateCreateArchiveCollectionParams(collection) !== true || id === undefined) {
+        if (ValidateArchiveCollectionParams(collection) !== true || id === undefined) {
             res.status(400).send("Bad Request");
             return;
         }
@@ -255,7 +275,7 @@ export function CreateAPIRouter(database: DatabaseService): Router {
         const search = CreateEntrySearchParametersFromBody(req.query);
         const entries = await database.searchEntries(search, count, offset);
         const collectionIds = Array.from(new Set(entries.results.map(e => e.collectionId)));
-        const collections = (await Promise.all(collectionIds.map(database.getCollection))).reduce((acc: any, col: DatabaseCollectionInstance | null) => {
+        const collections = (await Promise.all(collectionIds.map(database.getCollection))).reduce((acc: any, col: ArchiveCollection | null) => {
             if (col == null) throw new Error("Entry collection was invalid");
             acc[col.id] = col;
             return acc;
