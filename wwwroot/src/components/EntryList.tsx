@@ -1,6 +1,6 @@
 import { ArchiveEntry, getEntryImageURL } from "../ArchiveAPI";
 import { Link } from "react-router-dom";
-import { itemList, itemContainer } from "./EntryList.module.css";
+import { itemList, itemContainer } from "./List.module.css";
 
 export interface EntryListProps {
     entries?: Array<ArchiveEntry>

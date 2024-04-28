@@ -1,39 +1,28 @@
-import { FormEvent, useState, FormEventHandler, ChangeEventHandler, useId } from "react";
-import { ArchiveCollection, ArchiveEntryParams, DefaultArchiveCollectionId } from "../ArchiveAPI";
+import { FormEvent, useState, FormEventHandler, ChangeEventHandler, useId, ChangeEvent } from "react";
+import { ArchiveCollection, ArchiveEntryParams, DefaultArchiveCollectionId, EmptyArchiveCollectionParams } from "../ArchiveAPI";
 import ImageUploadWidget from "./ImageInput";
-import { inputGrid, buttonWrapper, descriptionInput, inputWrapper } from "./EntryForm.module.css";
-
+import Popup from "./Popup";
+import CreateCollection, { CreateCollectionProps } from "./CreateCollection";
+import { inputGrid, buttonWrapper, descriptionInput, inputWrapper, collectionPopup } from "./Form.module.css";
 export interface EditEntryFormProps {
     collections: Readonly<Array<ArchiveCollection>>,
     onSave: (entry: ArchiveEntryParams) => void,
     defaultEntry: ArchiveEntryParams,
+    addCollection: (collection: ArchiveCollection) => void,
     defaultImage?: string | File,
-    onDelete?: () => void;
-    onCancel?: () => void;
+    onDelete?: () => void,
+    onCancel?: () => void,
 };
 
-// const entryToParams = (entry: ArchiveEntry | null): ArchiveEntryParams => {
-//     const params: ArchiveEntryParams = { 
-//         ...EmptyArchiveEntryParams
-//     };
+function CreateCollectionPopup({ onCreate, onCancel }: CreateCollectionProps) {
+    return <Popup>
+        <div className={collectionPopup}>
+            <CreateCollection onCreate={onCreate} onCancel={onCancel} />
+        </div>
+    </Popup>
+}
 
-//     if (entry) {
-//         params.collectionId = entry.collectionId;
-//         params.colour = entry.colour;
-//         params.description = entry.description;
-//         params.donor = entry.donor;
-//         params.mediaType = entry.mediaType;
-//         params.physicalLocation = entry.physicalLocation;
-//         params.size = entry.size;
-//         params.title = entry.title;
-//         params.yearCreated = entry.yearCreated;
-//         params.image = undefined;
-//     }
-
-//     return params;
-// };
-
-function EntryForm({ collections, onSave, defaultEntry, defaultImage, onDelete, onCancel }: EditEntryFormProps) {
+function EntryForm({ collections, onSave, defaultEntry, defaultImage, onDelete, onCancel, addCollection }: EditEntryFormProps) {
     const titleId = useId();
     const descriptionId = useId();
     const donorId = useId();
@@ -44,9 +33,18 @@ function EntryForm({ collections, onSave, defaultEntry, defaultImage, onDelete, 
     const mediaTypeId = useId();
     const collectionIdId = useId();
     const [entry, setEntry] = useState({ ...defaultEntry });
+    const [collectionFormOpen, setCollectionFormOpen] = useState(false);
 
-    const inputChangeHandler: ChangeEventHandler<any> = (e) => {
+    const inputChangeHandler = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setEntry((old) => ({ ...old, [e.target.name]: e.target.value }));
+    };
+
+    const collectionChangeHandler = (e: ChangeEvent<HTMLSelectElement>) => {
+        if (e.target.value === "-1") {
+            setCollectionFormOpen(true);
+        } else {
+            setEntry((old) => ({ ...old, collectionId: parseInt(e.target.value) }));
+        }
     };
 
     const fileChangeHandler = (file: File | null) => {
@@ -58,9 +56,18 @@ function EntryForm({ collections, onSave, defaultEntry, defaultImage, onDelete, 
         onSave({ ...entry, collectionId: entry.collectionId == -1 ? DefaultArchiveCollectionId : entry.collectionId });
     };
 
-    const selectedCollectionId = collections.map(c => c.id).includes(entry.collectionId) ? entry.collectionId : DefaultArchiveCollectionId;
+    const createCollectionHandler = (collection: ArchiveCollection) => {
+        addCollection(collection);
+        setEntry((old) => ({ ...old, collectionId: collection.id }));
+        setCollectionFormOpen(false);
+    };
+
+    if (!collections.map(c => c.id).includes(entry.collectionId)) {
+        setEntry((old) => ({ ...old, collectionId: DefaultArchiveCollectionId }));
+    }
 
     return (<div>
+        {collectionFormOpen && <CreateCollectionPopup onCreate={createCollectionHandler} onCancel={() => setCollectionFormOpen(false)} /> }
         <ImageUploadWidget defaultValue={defaultImage} onChange={fileChangeHandler} />
         <form onSubmit={submitHandler}>
             <div className={inputWrapper}>
@@ -98,7 +105,7 @@ function EntryForm({ collections, onSave, defaultEntry, defaultImage, onDelete, 
                 </div>
                 <div className={inputWrapper}>
                     <label htmlFor={collectionIdId}>Collection</label>
-                    <select id={collectionIdId} name="collectionId" value={selectedCollectionId} disabled={collections.length === 0} onChange={inputChangeHandler}>
+                    <select id={collectionIdId} name="collectionId" value={entry.collectionId} disabled={collections.length === 0} onChange={collectionChangeHandler}>
                         <option value={-1}>CREATE COLLECTION</option>
                         {collections.map(c => (<option key={c.id} value={c.id} >{c.name}</option>))}
                     </select>

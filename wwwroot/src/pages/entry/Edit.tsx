@@ -1,6 +1,6 @@
 import { useContext, useState, useRef } from 'react';
 import EntryForm from '../../components/EntryForm';
-import { ArchiveCollection, ArchiveEntry, ArchiveEntryParams, deleteEntry, editEntry, EmptyArchiveEntryParams, getCollections, getEntry, getEntryImageURL } from '../../ArchiveAPI';
+import { ArchiveCollection, ArchiveCollectionId, ArchiveEntry, ArchiveEntryParams, deleteEntry, editEntry, EmptyArchiveEntryParams, getCollections, getEntry, getEntryImageURL } from '../../ArchiveAPI';
 import { PromptContext } from '../../main';
 import AsyncLoader from '../../components/AsyncLoader';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -68,11 +68,24 @@ function EditEntryPage() {
         }
     };
 
+    const addCollection = (collection: ArchiveCollection) => {
+        setCollections((old) => {
+            // Filter possible duplicate ids
+            const allCollections: {[key: ArchiveCollectionId]: ArchiveCollection} = {
+                [collection.id]: collection
+            };
+
+            old.forEach(c => allCollections[c.id] = c);
+            return Object.values(allCollections);
+        });
+    };
+
+
     return (<>
         <h2>Edit Entry</h2>
         <AsyncLoader loadFunction={loadEntryRef.current}>
-            <AsyncLoader loadFunction={loadCollectionsRef.current}>
-                <EntryForm onDelete={deleteHandler} onCancel={() => navigate(`/entry/view/${entry?.id}`)} onSave={saveHandler} collections={collections} defaultEntry={entryToParams(entry)} defaultImage={getEntryImageURL(entry)} />
+            <AsyncLoader loadFunction={loadCollectionsRef.current} reloadInterval={30000}>
+                <EntryForm onDelete={deleteHandler} onCancel={() => navigate(`/entry/view/${entry?.id}`)} onSave={saveHandler} collections={collections} defaultEntry={entryToParams(entry)} defaultImage={getEntryImageURL(entry)} addCollection={addCollection} />
             </AsyncLoader>
         </AsyncLoader>
     </>);

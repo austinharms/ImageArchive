@@ -14,17 +14,24 @@ enum LoadState {
     ERROR,
 }
 
+interface RequestState {
+    requestPending: boolean,
+    pendingTimeout?: number
+}
+
 export function AsyncLoader({ loadFunction, reloadInterval, children }: AsyncLoaderProps) {
-    const timeoutRef = useRef(undefined as undefined | number);
-    const lastLoadFunc = useRef(null as AsyncLoadFunction | null);
+    const requestRef = useRef({ requestPending: false } as RequestState);
+    const lastLoadFunc = useRef(loadFunction);
     const [loadState, setLoadState] = useState(LoadState.PENDING);
     const executeLoadFunction = async () => {
         try {
-            clearTimeout(timeoutRef.current);
-            timeoutRef.current = undefined;
+            if (requestRef.current.requestPending) return;
+            requestRef.current.requestPending = true;
+            clearTimeout(requestRef.current.pendingTimeout);
+            requestRef.current.pendingTimeout = undefined;
             await loadFunction();
             if (reloadInterval && reloadInterval > 0) {
-                timeoutRef.current = setTimeout(executeLoadFunction, reloadInterval) as any as number;
+                requestRef.current.pendingTimeout = setTimeout(executeLoadFunction, reloadInterval) as any as number;
             }
 
             setLoadState(LoadState.COMPLETED);
@@ -34,6 +41,8 @@ export function AsyncLoader({ loadFunction, reloadInterval, children }: AsyncLoa
                 setLoadState(LoadState.ERROR);
             }
         }
+
+        requestRef.current.requestPending = false;
     };
 
     useEffect(() => {
@@ -43,6 +52,7 @@ export function AsyncLoader({ loadFunction, reloadInterval, children }: AsyncLoa
         }
 
         executeLoadFunction();
+        return (() => clearTimeout(requestRef.current.pendingTimeout));
     }, [loadFunction, reloadInterval]);
 
     switch (loadState) {

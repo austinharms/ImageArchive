@@ -11,6 +11,9 @@ import CollectionListPage from './pages/collection/List';
 import NavHeader from './components/NavHeader';
 import ViewEntryPage from './pages/entry/View';
 import EditEntryPage from './pages/entry/Edit';
+import CreateCollectionPage from './pages/collection/Create';
+import ViewCollectionPage from './pages/collection/View';
+import EditCollectionPage from './pages/collection/Edit';
 
 export interface PromptState {
   key: string,
@@ -55,7 +58,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             <Route path='/entry/list' element={<EntryListPage />} />
             <Route path='/entry/view/:id' element={<ViewEntryPage />} />
             <Route path='/entry/edit/:id' element={<EditEntryPage />} />
+            <Route path='/collection/create' element={<CreateCollectionPage />} />
             <Route path='/collection/list' element={<CollectionListPage />} />
+            <Route path='/collection/view/:id' element={<ViewCollectionPage />} />
+            <Route path='/collection/edit/:id' element={<EditCollectionPage />} />
             <Route path='*' element={<NotFound />} />
           </Routes>
         </div>

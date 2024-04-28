@@ -1,7 +1,7 @@
-import { useContext, useState, useRef } from 'react';
-import { ArchiveCollection, ArchiveEntry, ArchiveEntryParams, createEntry, EmptyArchiveEntryParams, getCollections, getEntry } from '../../ArchiveAPI';
-import AsyncLoader, { AsyncLoadFunction } from '../../components/AsyncLoader';
-import { Link, useParams } from "react-router-dom";
+import { useState, useRef } from 'react';
+import { ArchiveEntry, getEntry } from '../../ArchiveAPI';
+import AsyncLoader from '../../components/AsyncLoader';
+import { useParams } from "react-router-dom";
 import EntryDetails from '../../components/EntryDetails';
 
 const loadEntry = async (id: string | undefined, callback: (entry: ArchiveEntry) => void) => {
@@ -15,7 +15,7 @@ function ViewEntryPage() {
     const { id } = useParams();
     const [entry, setEntry] = useState(null as null | ArchiveEntry);
     const loadFuncRef = useRef(loadEntry.bind(undefined, id, setEntry));
-    return (<AsyncLoader loadFunction={loadFuncRef.current}>
+    return (<AsyncLoader loadFunction={loadFuncRef.current} reloadInterval={30000}>
             {entry && <EntryDetails entry={entry} />}
         </AsyncLoader>);
 }

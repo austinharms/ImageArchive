@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { ArchiveEntry, getEntryImageURL } from "../ArchiveAPI";
-import { detailsGrid, detailItem, image, editButton } from "./EntryDetails.module.css";
+import { detailsGrid, detailItem, image, editButton } from "./Details.module.css";
 export interface ViewEntryProps {
     entry: ArchiveEntry
 };

@@ -1,33 +1,24 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import AsyncLoader, { AsyncLoadFunction } from "../../components/AsyncLoader";
-import PageControls from "../../components/PageControls";
+import PaginatedAsyncLoader from "../../components/PaginatedAsyncLoader";
 import { ArchiveCollection, EmptyResultArray, ResultArray, getCollections } from "../../ArchiveAPI";
 import CollectionList from "../../components/CollectionList";
 
-const loadData = async (pageSize: number, page: number, callback: (entry: ResultArray<ArchiveCollection>) => void) => {
+const loadData = async (callback: (entry: ResultArray<ArchiveCollection>) => void, page: number,  pageSize: number) => {
     const results = await getCollections(pageSize, pageSize * (page - 1));
     callback(results);
 };
 
 function CollectionListPage() {
     const [data, setData] = useState(EmptyResultArray);
-    const [searchParams, setSearchParams] = useSearchParams([["page", "1"], ["page_size", "25"]]);
-    const pageNumber: number = Math.max(parseInt(searchParams.get("page")!), 0) || 1;
-    const pageSize: number = Math.max(parseInt(searchParams.get("page_size")!), 0) || 25;
-
-    const [loadFunc, setLoadFunc] = useState(() => loadData.bind(undefined, pageSize, pageNumber, setData) as AsyncLoadFunction);
-    const setPage = (page: number) => {
-        setSearchParams([["page", `${page}`], ["page_size", `${pageSize}`]]);
-        setLoadFunc(() => loadData.bind(undefined, pageSize, page, setData) as AsyncLoadFunction);
-    };
+    const loadFuncRef = useRef(loadData.bind(undefined, setData));
 
     return (<>
         <h2>All Collections</h2>
-        <AsyncLoader loadFunction={loadFunc}>
+        <PaginatedAsyncLoader loadFunction={loadFuncRef.current} totalResultCount={data.totalResultCount} defaultPageSize={25} reloadInterval={30000}>
             <CollectionList collections={data.results} />
-            <PageControls page={pageNumber} pageCount={ Math.max(Math.ceil(data.totalResultCount / pageSize), 1)} setPage={setPage} />
-        </AsyncLoader>
+        </PaginatedAsyncLoader>
     </>);
 }
 

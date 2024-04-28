@@ -6,6 +6,10 @@ export interface ArchiveCollectionParams {
     name: string,
 };
 
+export const EmptyArchiveCollectionParams: Readonly<ArchiveCollectionParams> = {
+    name: "",
+};
+
 export interface ArchiveCollection {
     readonly id: ArchiveCollectionId,
     readonly name: string
@@ -60,6 +64,14 @@ export interface ArchiveSearchParameters {
     donor: string,
     mediaType: string,
     collection: string,
+};
+
+export const EmptyArchiveSearchParameters: Readonly<ArchiveSearchParameters> = {
+    title: "",
+    description: "",
+    donor: "",
+    mediaType: "",
+    collection: ""
 };
 
 export interface ResultArray<T> {

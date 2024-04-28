@@ -12,6 +12,7 @@ function NavHeader() {
                 <li><Link className={navItem} to="/entry/list">Entries</Link></li>
                 <li><Link className={navItem} to="/entry/create">Create Entry</Link></li>
                 <li><Link className={navItem} to="/collection/list">Collections</Link></li>
+                <li><Link className={navItem} to="/collection/create">Create Collection</Link></li>
             </ul>
         </nav>
     </div>);

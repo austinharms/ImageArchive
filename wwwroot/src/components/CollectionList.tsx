@@ -1,12 +1,13 @@
 import { ArchiveCollection } from "../ArchiveAPI";
 import { Link } from "react-router-dom";
+import { itemContainer } from "./List.module.css";
 
 export interface CollectionListProps {
     collections?: Array<ArchiveCollection>
 };
 
 export function CollectionItem(collection: ArchiveCollection) {
-    return (<li key={collection.id}>
+    return (<li className={itemContainer} key={collection.id}>
         <Link to={`/collection/view/${collection.id}`}>
             <h3>{collection.name}</h3>
         </Link>
