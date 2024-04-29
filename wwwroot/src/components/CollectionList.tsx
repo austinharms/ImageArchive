@@ -1,5 +1,6 @@
 import { ArchiveCollection } from "../ArchiveAPI";
 import { Link } from "react-router-dom";
+// @ts-ignore: CSS modules don't export as expected, ignore any value does not exist errors
 import { itemContainer } from "./List.module.css";
 
 export interface CollectionListProps {

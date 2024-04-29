@@ -1,5 +1,6 @@
 import { FormEvent, ChangeEvent, useState, useId } from "react";
 import { ArchiveCollectionParams } from "../ArchiveAPI";
+// @ts-ignore: CSS modules don't export as expected, ignore any value does not exist errors
 import { buttonWrapper, inlineInputWrapper } from "./Form.module.css";
 export interface CollectionFormProps {
     defaultCollection: ArchiveCollectionParams

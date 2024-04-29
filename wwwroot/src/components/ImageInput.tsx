@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState, DragEvent, MouseEvent, ChangeEvent } from "react";
+import { useEffect, useRef, useState, DragEvent, MouseEvent, ChangeEvent } from "react";
+// @ts-ignore: CSS modules don't export as expected, ignore any value does not exist errors
 import { hiddenInput, centerContents, overlay, hoverOverlay, padContents, imageCanvas, emptyCanvas } from "./ImageInput.module.css";
 
 export interface ImageUploadWidgetProps {

@@ -18,7 +18,10 @@ function PaginatedAsyncLoader({ children, loadFunction, reloadInterval, totalRes
     const pageSize: number = Math.max(parseInt(searchParams.get("page_size")!), 0) || defaultPageSize;
     const pageCount: number = Math.ceil(totalResultCount / pageSize) || 1;
     const [boundLoadFunction, setBoundLoadFunction] = useState(() => loadFunction.bind(undefined, pageNumber, pageSize));
-    const setPage = (page: number) => setSearchParams([["page", `${page}`], ["page_size", `${pageSize}`]]);
+    const setPage = (page: number) => setSearchParams((old) => {
+        old.set("page", `${page}`);
+        return old;
+    });
     useEffect(() => {
         setBoundLoadFunction(() => loadFunction.bind(undefined, pageNumber, pageSize));
     }, [loadFunction, pageNumber, pageSize]);

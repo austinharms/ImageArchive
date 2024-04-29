@@ -1,6 +1,4 @@
 import { useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import AsyncLoader, { AsyncLoadFunction } from "../../components/AsyncLoader";
 import PaginatedAsyncLoader from "../../components/PaginatedAsyncLoader";
 import { ArchiveCollection, EmptyResultArray, ResultArray, getCollections } from "../../ArchiveAPI";
 import CollectionList from "../../components/CollectionList";
@@ -10,7 +8,7 @@ const loadData = async (callback: (entry: ResultArray<ArchiveCollection>) => voi
     callback(results);
 };
 
-function CollectionListPage() {
+function ListCollectionPage() {
     const [data, setData] = useState(EmptyResultArray);
     const loadFuncRef = useRef(loadData.bind(undefined, setData));
 
@@ -22,4 +20,4 @@ function CollectionListPage() {
     </>);
 }
 
-export default CollectionListPage;
+export default ListCollectionPage;

@@ -1,4 +1,5 @@
 import React from "react";
+// @ts-ignore: CSS modules don't export as expected, ignore any value does not exist errors
 import { background, contentWrapper } from "./Popup.module.css";
 
 function Popup({ children, preventPropagation }: { children?: React.ReactNode, preventPropagation?: boolean }) {

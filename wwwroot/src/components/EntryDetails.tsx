@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { ArchiveEntry, getEntryImageURL } from "../ArchiveAPI";
+// @ts-ignore: CSS modules don't export as expected, ignore any value does not exist errors
 import { detailsGrid, detailItem, image, editButton } from "./Details.module.css";
 export interface ViewEntryProps {
     entry: ArchiveEntry

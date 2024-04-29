@@ -54,6 +54,22 @@
     border: 3px solid gray;
 }
 
+.search-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+.search-input-wrapper {
+    display: grid;
+    grid-template-columns: min-content 1fr;
+    margin: 5px;
+}
+
+.search-input-wrapper label {
+    margin-right: 10px;
+    text-wrap: nowrap;
+}
+
 @media (prefers-color-scheme: light) {
     .collection-popup {
       background-color: #ffffff;
@@ -65,3 +81,16 @@
         grid-template-columns: 1fr;
     }
 }
+
+@media only screen and (max-width: 825px) {
+    .search-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media only screen and (max-width: 540px) {
+    .search-grid {
+        grid-template-columns: 1fr;
+    }
+}
+

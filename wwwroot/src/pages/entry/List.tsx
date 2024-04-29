@@ -8,7 +8,7 @@ const loadData = async (callback: (entry: ResultArray<ArchiveEntry>) => void, pa
     callback(results);
 };
 
-function EntryListPage() {
+function ListEntryPage() {
     const [data, setData] = useState(EmptyResultArray);
     const loadFuncRef = useRef(loadData.bind(undefined, setData) as PaginatedAsyncLoadFunction);
     return (<>
@@ -19,4 +19,4 @@ function EntryListPage() {
     </>);
 }
 
-export default EntryListPage;
+export default ListEntryPage;

@@ -1,8 +1,9 @@
-import { FormEvent, useState, FormEventHandler, ChangeEventHandler, useId, ChangeEvent } from "react";
-import { ArchiveCollection, ArchiveEntryParams, DefaultArchiveCollectionId, EmptyArchiveCollectionParams } from "../ArchiveAPI";
+import { FormEvent, useState, FormEventHandler, useId, ChangeEvent } from "react";
+import { ArchiveCollection, ArchiveEntryParams, DefaultArchiveCollectionId } from "../ArchiveAPI";
 import ImageUploadWidget from "./ImageInput";
 import Popup from "./Popup";
 import CreateCollection, { CreateCollectionProps } from "./CreateCollection";
+// @ts-ignore: CSS modules don't export as expected, ignore any value does not exist errors
 import { inputGrid, buttonWrapper, descriptionInput, inputWrapper, collectionPopup } from "./Form.module.css";
 export interface EditEntryFormProps {
     collections: Readonly<Array<ArchiveCollection>>,
