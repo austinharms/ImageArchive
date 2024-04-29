@@ -20,6 +20,7 @@ const entryToParams = (entry: ArchiveEntry | null): ArchiveEntryParams => {
         params.size = entry.size;
         params.title = entry.title;
         params.yearCreated = entry.yearCreated;
+        params.accessionNumber = entry.accessionNumber,
         params.image = undefined;
     }
 
