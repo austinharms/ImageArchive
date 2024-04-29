@@ -1,7 +1,7 @@
 import { Service } from "node-windows";
 import { join } from "path";
 
-if (process.argv.length < 3 || (process.argv[2].toLocaleLowerCase() !== "install" || process.argv[2].toLocaleLowerCase() !== "uninstall")) {
+if (process.argv.length < 3 || process.argv[2].toLocaleLowerCase() !== "install" && process.argv[2].toLocaleLowerCase() !== "uninstall") {
     console.error("Unknown arguments, expected install or uninstall");
     process.exit(1);
 }
@@ -9,7 +9,7 @@ if (process.argv.length < 3 || (process.argv[2].toLocaleLowerCase() !== "install
 const archiveService = new Service({
     name: "ImageArchiveService",
     description: "Image archive web service",
-    script: join(__dirname, "../main.js"),
+    script: join(__dirname, "main.js"),
 });
 
 archiveService.on("install", () => {
