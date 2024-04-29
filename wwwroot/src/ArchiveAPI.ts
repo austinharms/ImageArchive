@@ -26,6 +26,7 @@ export interface ArchiveEntryParams {
     collectionId: ArchiveCollectionId,
     physicalLocation: string,
     mediaType: string,
+    accessionNumber: string,
     image?: File,
 };
 
@@ -39,6 +40,7 @@ export const EmptyArchiveEntryParams: Readonly<ArchiveEntryParams> = {
     collectionId: 0,
     physicalLocation: "",
     mediaType: "",
+    accessionNumber: "",
 };
 
 export interface ArchiveEntry {
@@ -55,7 +57,8 @@ export interface ArchiveEntry {
     readonly image: string,
     readonly dateAdded: string,
     readonly dateLastModified: string,
-    readonly collection: ArchiveCollection
+    readonly collection: ArchiveCollection,
+    readonly accessionNumber: string,
 };
 
 export interface ArchiveSearchParameters {
@@ -113,6 +116,7 @@ export function ValidateArchiveEntryParams(params: ArchiveEntryParams): true | E
         ValidateParam(params, "size", "string", true);
         ValidateParam(params, "title", "string");
         ValidateParam(params, "yearCreated", "string", true);
+        ValidateParam(params, "accessionNumber", "string", true);
         return true;
     } catch (e) {
         return e as Error;
@@ -151,12 +155,12 @@ const request = async (url: string, method: HTTP_METHOD, fields: { [key: string]
     return await req.json();
 };
 
-export const createEntry = async ({ title, description, donor, yearCreated, colour, size, collectionId, physicalLocation, mediaType, image }: ArchiveEntryParams): Promise<ArchiveEntry> => {
-    return await request(API_ENDPOINT.href + "entry", HTTP_METHOD.POST, { title, description, donor, yearCreated, colour, size, collectionId, physicalLocation, mediaType, image });
+export const createEntry = async (entry: ArchiveEntryParams): Promise<ArchiveEntry> => {
+    return await request(API_ENDPOINT.href + "entry", HTTP_METHOD.POST, entry);
 };
 
-export const editEntry = async (id: ArchiveEntryId, { title, description, donor, yearCreated, colour, size, collectionId, physicalLocation, mediaType, image }: ArchiveEntryParams): Promise<ArchiveEntry> => {
-    return await request(API_ENDPOINT.href + "entry/" + id, HTTP_METHOD.PATCH, { title, description, donor, yearCreated, colour, size, collectionId, physicalLocation, mediaType, image });
+export const editEntry = async (id: ArchiveEntryId, entry: ArchiveEntryParams): Promise<ArchiveEntry> => {
+    return await request(API_ENDPOINT.href + "entry/" + id, HTTP_METHOD.PATCH, entry);
 };
 
 export const deleteEntry = async (id: ArchiveEntryId): Promise<void> => {
@@ -171,16 +175,16 @@ export const getEntries = async (count: number | undefined = undefined, offset: 
     return await request(API_ENDPOINT.href + "entries", HTTP_METHOD.GET, { count, offset });
 };
 
-export const searchEntries = async ({ title, description, donor, mediaType, collection }: ArchiveSearchParameters, count: number | undefined = undefined, offset: number = 0): Promise<ResultArray<ArchiveEntry>> => {
-    return await request(API_ENDPOINT.href + "search", HTTP_METHOD.GET, { title, description, donor, mediaType, collection, count, offset });
+export const searchEntries = async (search: ArchiveSearchParameters, count: number | undefined = undefined, offset: number = 0): Promise<ResultArray<ArchiveEntry>> => {
+    return await request(API_ENDPOINT.href + "search", HTTP_METHOD.GET, { ...search, count, offset });
 };
 
-export const createCollection = async ({ name }: ArchiveCollectionParams):Promise<ArchiveCollection> => {
-    return await request(API_ENDPOINT.href + "collection", HTTP_METHOD.POST, { name });
+export const createCollection = async (collection: ArchiveCollectionParams):Promise<ArchiveCollection> => {
+    return await request(API_ENDPOINT.href + "collection", HTTP_METHOD.POST, collection);
 };
 
-export const editCollection = async (id: ArchiveCollectionId, { name }: ArchiveCollectionParams):Promise<ArchiveCollection> => {
-    return await request(API_ENDPOINT.href + "collection/" + id, HTTP_METHOD.PATCH, { name });
+export const editCollection = async (id: ArchiveCollectionId, collection: ArchiveCollectionParams):Promise<ArchiveCollection> => {
+    return await request(API_ENDPOINT.href + "collection/" + id, HTTP_METHOD.PATCH, collection);
 };
 
 export const deleteCollection = async (id: ArchiveCollectionId):Promise<void> => {

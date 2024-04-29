@@ -33,6 +33,7 @@ function CreateArchiveEntryFromBody(body: any): ArchiveEntryParams {
         collectionId: parseFiniteInt(body.collectionId)!,
         physicalLocation: body.physicalLocation,
         mediaType: body.mediaType,
+        accessionNumber: body.accessionNumber,
     };
 
     return entry;
@@ -63,7 +64,7 @@ export function CreateAPIRouter(database: DatabaseService): Router {
     const multerInstance = multer();
     const imageParser = multerInstance.single("image");
     const fieldParser = multerInstance.none();
-    const queryParser = express.urlencoded({ "extended": false, "inflate": true, "limit": "1024kb", "parameterLimit": 10 });
+    const queryParser = express.urlencoded({ "extended": false, "inflate": true, "limit": "1024kb", "parameterLimit": 16 });
     const router: Router = express.Router();
 
     router.post("/entry", imageParser, (req: Request, res: Response, next: NextFunction) => (async () => {

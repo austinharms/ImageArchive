@@ -47,6 +47,10 @@ function EntryDetails({ entry }: ViewEntryProps) {
                 <p>{entry.mediaType}</p>
             </div>
             <div className={detailItem}>
+                <h4>Accession Number:</h4>
+                <p>{entry.accessionNumber}</p>
+            </div>
+            <div className={detailItem}>
                 <h4>Collection:</h4>
                 <p>{entry.collection.name}</p>
             </div>
@@ -58,10 +62,8 @@ function EntryDetails({ entry }: ViewEntryProps) {
                 <h4>Date Last Updated:</h4>
                 <p>{new Date(entry.dateLastModified).toLocaleDateString()}</p>
             </div>
-            <div className={detailItem}>
-                <button className={editButton} onClick={() => navigate(`/entry/edit/${entry.id}`)}>Edit Entry</button>
-            </div>
         </div>
+        <button className={editButton} onClick={() => navigate(`/entry/edit/${entry.id}`)}>Edit Entry</button>
     </div>);
 }
 

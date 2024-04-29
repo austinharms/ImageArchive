@@ -22,6 +22,7 @@ export interface ArchiveEntryParams {
     collectionId: ArchiveCollectionId,
     physicalLocation: string,
     mediaType: string,
+    accessionNumber: string,
     image?: string,
 };
 
@@ -39,6 +40,7 @@ export interface ArchiveEntry {
     readonly image: string,
     readonly dateAdded: string,
     readonly dateLastModified: string,
+    readonly accessionNumber: string,
 };
 
 export interface ArchiveSearchParameters {
@@ -81,6 +83,7 @@ export function ValidateArchiveEntryParams(params: ArchiveEntryParams) : true | 
         ValidateParam(params, "size", "string", true);
         ValidateParam(params, "title", "string");
         ValidateParam(params, "yearCreated", "string", true);
+        ValidateParam(params, "accessionNumber", "string", true);
         return true;
     } catch(e) {
         return e as Error;

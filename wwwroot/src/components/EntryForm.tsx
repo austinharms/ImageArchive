@@ -32,6 +32,7 @@ function EntryForm({ collections, onSave, defaultEntry, defaultImage, onDelete, 
     const sizeId = useId();
     const physicalLocationId = useId();
     const mediaTypeId = useId();
+    const accessionNumberId = useId();
     const collectionIdId = useId();
     const [entry, setEntry] = useState({ ...defaultEntry });
     const [collectionFormOpen, setCollectionFormOpen] = useState(false);
@@ -103,6 +104,10 @@ function EntryForm({ collections, onSave, defaultEntry, defaultImage, onDelete, 
                 <div className={inputWrapper}>
                     <label htmlFor={mediaTypeId}>Media Type</label>
                     <input id={mediaTypeId} type="text" name="mediaType" value={entry.mediaType} placeholder="Media Type..." onChange={inputChangeHandler} />
+                </div>
+                <div className={inputWrapper}>
+                    <label htmlFor={accessionNumberId}>Accession Number</label>
+                    <input id={accessionNumberId} type="text" name="accessionNumber" value={entry.accessionNumber} placeholder="Accession Number..." onChange={inputChangeHandler} />
                 </div>
                 <div className={inputWrapper}>
                     <label htmlFor={collectionIdId}>Collection</label>

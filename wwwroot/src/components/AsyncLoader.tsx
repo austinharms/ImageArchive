@@ -37,9 +37,7 @@ export function AsyncLoader({ loadFunction, reloadInterval, children }: AsyncLoa
             setLoadState(LoadState.COMPLETED);
         } catch (e) {
             console.error(e);
-            if (loadState === LoadState.PENDING) {
-                setLoadState(LoadState.ERROR);
-            }
+            setLoadState(old => old === LoadState.PENDING?LoadState.ERROR:old);
         }
 
         requestRef.current.requestPending = false;
