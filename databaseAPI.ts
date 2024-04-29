@@ -240,7 +240,7 @@ export function CreateAPIRouter(database: DatabaseService): Router {
         res.status(200).send(JSON.stringify(collections));
     })().catch(next));
 
-    router.patch("/collection/:id", (req: Request, res: Response, next: NextFunction) => (async () => {
+    router.patch("/collection/:id", fieldParser, (req: Request, res: Response, next: NextFunction) => (async () => {
         const id = parseFiniteInt(req.params.id);
         const collection = CreateArchiveCollectionFromBody(req.body);
         if (ValidateArchiveCollectionParams(collection) !== true || id === undefined) {
