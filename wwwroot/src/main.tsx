@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import CreateEntryPage from './pages/entry/Create';
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 // @ts-ignore: CSS modules don't export as expected, ignore any value does not exist errors
 import { contentWrapper } from "./main.module.css";
 import './resets.css';
@@ -66,6 +66,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             <Route path='/collection/list' element={<ListCollectionPage />} />
             <Route path='/collection/view/:id' element={<ViewCollectionPage />} />
             <Route path='/collection/edit/:id' element={<EditCollectionPage />} />
+            <Route path='/' element={<Navigate to='/entry/search' replace={true} />} />
             <Route path='*' element={<NotFound />} />
           </Routes>
         </div>

@@ -9,7 +9,7 @@ export interface ArchiveCollectionParams {
 export interface ArchiveCollection {
     readonly id: ArchiveCollectionId,
     readonly name: string
-    readonly dateCreated: Date,
+    readonly dateCreated: string,
 };
 
 export interface ArchiveEntryParams {
@@ -37,8 +37,8 @@ export interface ArchiveEntry {
     readonly physicalLocation: string,
     readonly mediaType: string,
     readonly image: string,
-    readonly dateAdded: Date,
-    readonly dateLastModified: Date,
+    readonly dateAdded: string,
+    readonly dateLastModified: string,
 };
 
 export interface ArchiveSearchParameters {

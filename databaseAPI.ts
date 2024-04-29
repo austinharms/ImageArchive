@@ -184,7 +184,7 @@ export function CreateAPIRouter(database: DatabaseService): Router {
             await rm(getImageFilepath(entry.image), { "recursive": false }).catch(e => console.error(`Failed to delete image file: "${getImageFilepath(entry.image)}"`, e));
         }
 
-        res.status(200).send("ok");
+        res.status(200).send(JSON.stringify({ ok: true }));
     })().catch(next));
 
     router.post("/collection", fieldParser, (req: Request, res: Response, next: NextFunction) => (async () => {
@@ -266,7 +266,7 @@ export function CreateAPIRouter(database: DatabaseService): Router {
         }
 
         await database.deleteCollection(id);
-        res.status(200).send("ok");
+        res.status(200).send(JSON.stringify({ ok: true }));
     })().catch(next));
 
     router.get("/search", queryParser, (req: Request, res: Response, next: NextFunction) => (async () => {

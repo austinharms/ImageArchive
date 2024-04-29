@@ -1,8 +1,7 @@
 import express, { Express, NextFunction, Request, Response } from "express";
 import config from "./config";
 import { DatabaseService } from "./databaseInterface";
-//import { CreateConnection } from "./sqliteDatabase";
-import { CreateMemoryDatabase } from "./memoryDatabase";
+import { CreateConnection } from "./sqliteDatabase";
 import { CreateAPIRouter } from "./databaseAPI";
 import { mkdir, access } from "fs/promises";
 import { existsSync, constants as FS_CONST } from "fs";
@@ -20,7 +19,7 @@ import { existsSync, constants as FS_CONST } from "fs";
         process.exit(1);
     }
 
-    const db: DatabaseService = await CreateMemoryDatabase(); //await CreateConnection(config.SQLITE_PATH);
+    const db: DatabaseService = await CreateConnection(config.SQLITE_PATH);
     const app: Express = express();
     const port: number = config.HTTP_PORT || 80;
 

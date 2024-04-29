@@ -126,7 +126,8 @@ enum HTTP_METHOD {
     DELETE = "DELETE",
 };
 
-const API_ENDPOINT = new URL("http://127.0.0.1:8080"); //new URL(window.location);
+// @ts-ignore:
+const API_ENDPOINT = new URL(new URL(window.location).origin);
 API_ENDPOINT.pathname = "/api/v1/";
 
 const fetchRequest = (url: string, method: HTTP_METHOD, fields: { [key: string]: any }):Promise<Response> => {
@@ -207,5 +208,3 @@ export const getEntryImageURL = (entry: ArchiveEntry | null): string => {
         return "";
     }
 };
-
-//await ArchiveAPI.createEntry({ title: "Test", description: "Test Img", donor: "Bob", yearCreated: "1024", colour: "NONE", size: "1x1", collectionId: 0, physicalLocation: "NONE", mediaType: "NONE" })
