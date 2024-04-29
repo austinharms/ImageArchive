@@ -3,12 +3,18 @@ import { Link } from "react-router-dom";
 import { splitContents, navList, navItem, navWrapper, navSection } from "./NavHeader.module.css";
 // @ts-ignore: CSS modules don't export as expected, ignore any value does not exist errors
 import { contentWrapper } from "../main.module.css";
+import { title } from "../title";
+import { useEffect } from "react";
 
 function NavHeader() {
+    useEffect(() => {
+        document.title = title;
+    }, []);
+    
     return (<div className={navWrapper}>
         <nav className={`${splitContents} ${contentWrapper}`}>
             <Link className={navItem} to="/entry/search">
-                <h1>Altona Archive</h1>
+                <h1>{title}</h1>
             </Link>
             <ul className={navList}>
                 <div className={navSection}>
