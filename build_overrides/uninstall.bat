@@ -1,0 +1,1 @@
+node ./windowsServiceInstaller.js uninstall
