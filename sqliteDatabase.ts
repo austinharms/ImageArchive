@@ -3,13 +3,30 @@ import Database from "better-sqlite3";
 
 export async function CreateConnection(path: string): Promise<DatabaseService> {
     const db = new Database(path);
-    db.pragma("journal_mode = WAL");
-    // Ensure tables exist
-    db.prepare(`CREATE TABLE IF NOT EXISTS collection (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, dateCreated TEXT)`).run();
-    db.prepare(`CREATE TABLE IF NOT EXISTS entry ( id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, description TEXT NOT NULL, donor TEXT, yearCreated TEXT, colour TEXT, size TEXT, collectionId INTEGER NOT NULL, physicalLocation TEXT, mediaType TEXT, image TEXT, accessionNumber TEXT, dateAdded TEXT NOT NULL, dateLastModified TEXT NOT NULL, FOREIGN KEY(collectionId) REFERENCES collection(id))`).run();
-    // Ensure default collection exits and has expected name
-    db.prepare(`INSERT OR IGNORE INTO collection (id, name, dateCreated) VALUES (0, 'None', '${new Date().toISOString()}')`).run();
-    db.prepare(`UPDATE collection SET name = 'None' WHERE id=0`).run();
+    const flushWAL = () => {
+        try {
+            db.pragma(`wal_checkpoint(RESTART)`);
+        } catch(e) {
+            console.error("Failed to flush WAL:", e)
+        }
+    };
+
+    // This should sync the WAL after a transaction but, does not?
+    // TODO Find out why this does not behave as expected
+    db.pragma(`synchronous = 2`);
+    db.pragma(`journal_mode = WAL`);
+    db.transaction(() => {
+        // Ensure tables exist
+        db.prepare(`CREATE TABLE IF NOT EXISTS collection (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, dateCreated TEXT)`).run();
+        db.prepare(`CREATE TABLE IF NOT EXISTS entry ( id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, description TEXT NOT NULL, donor TEXT, yearCreated TEXT, colour TEXT, size TEXT, collectionId INTEGER NOT NULL, physicalLocation TEXT, mediaType TEXT, image TEXT, accessionNumber TEXT, dateAdded TEXT NOT NULL, dateLastModified TEXT NOT NULL, FOREIGN KEY(collectionId) REFERENCES collection(id))`).run();
+        // Ensure default collection exits and has expected name
+        db.prepare(`INSERT OR IGNORE INTO collection (id, name, dateCreated) VALUES (0, 'None', '${new Date().toISOString()}')`).run();
+        db.prepare(`UPDATE collection SET name = 'None' WHERE id=0`).run();
+    }).immediate();
+    // Ensure all changes are flushed to the .sqlite file
+    flushWAL();
+    // Flush the WAL every hour
+    setInterval(flushWAL, 3600000);
     const service: DatabaseService = {
         createEntry: async (entry: ArchiveEntryParams): Promise<ArchiveEntry> => {
             const validation = ValidateArchiveEntryParams(entry);
@@ -30,7 +47,8 @@ export async function CreateConnection(path: string): Promise<DatabaseService> {
                 dateAdded: new Date().toISOString(),
                 dateLastModified: new Date().toISOString(),
             };
-            const results = db.prepare(`INSERT INTO entry (title, description, donor, yearCreated, colour, size, collectionId, physicalLocation, mediaType, image, accessionNumber, dateAdded, dateLastModified) VALUES (@title, @description, @donor, @yearCreated, @colour, @size, @collectionId, @physicalLocation, @mediaType, @image, @accessionNumber, @dateAdded, @dateLastModified)`).run(dbEntry);
+
+            const results = db.transaction(() => db.prepare(`INSERT INTO entry (title, description, donor, yearCreated, colour, size, collectionId, physicalLocation, mediaType, image, accessionNumber, dateAdded, dateLastModified) VALUES (@title, @description, @donor, @yearCreated, @colour, @size, @collectionId, @physicalLocation, @mediaType, @image, @accessionNumber, @dateAdded, @dateLastModified)`).run(dbEntry))();
             return (await service.getEntry(results.lastInsertRowid as ArchiveEntryId))!;
         },
         editEntry: async (id: ArchiveEntryId, entry: ArchiveEntryParams): Promise<ArchiveEntry> => {
@@ -50,11 +68,11 @@ export async function CreateConnection(path: string): Promise<DatabaseService> {
                 dateLastModified: new Date().toISOString(),
                 dateAdded: "",
             };
-            db.prepare(`UPDATE entry SET title = @title, description = @description, donor = @donor, yearCreated = @yearCreated, colour = @colour, size = @size, collectionId = @collectionId, physicalLocation = @physicalLocation, mediaType = @mediaType, image = @image, accessionNumber = @accessionNumber, dateLastModified = @dateLastModified WHERE id = @id`).run(dbEntry);
+            db.transaction(() => db.prepare(`UPDATE entry SET title = @title, description = @description, donor = @donor, yearCreated = @yearCreated, colour = @colour, size = @size, collectionId = @collectionId, physicalLocation = @physicalLocation, mediaType = @mediaType, image = @image, accessionNumber = @accessionNumber, dateLastModified = @dateLastModified WHERE id = @id`).run(dbEntry))();
             return (await service.getEntry(id))!;
         },
         deleteEntry: async (id: ArchiveEntryId): Promise<void> => {
-            db.prepare(`DELETE FROM entry WHERE id = @id`).run({ id });
+            db.transaction(() => db.prepare(`DELETE FROM entry WHERE id = @id`).run({ id }))();
         },
         getEntry: async (id: ArchiveEntryId): Promise<ArchiveEntry | null> => {
             const results: any = db.prepare(`SELECT * FROM entry WHERE id = @id`).get({ id });
@@ -148,7 +166,7 @@ export async function CreateConnection(path: string): Promise<DatabaseService> {
                 name: collection.name,
                 dateCreated: new Date().toISOString(),
             };
-            const results = db.prepare(`INSERT INTO collection (name, dateCreated) VALUES (@name, @dateCreated)`).run(dbCollection);
+            const results = db.transaction(() => db.prepare(`INSERT INTO collection (name, dateCreated) VALUES (@name, @dateCreated)`).run(dbCollection))();
             return (await service.getCollection(results.lastInsertRowid as ArchiveCollectionId))!;
         },
         editCollection: async (id: ArchiveCollectionId, collection: ArchiveCollectionParams): Promise<ArchiveCollection> => {
@@ -159,15 +177,17 @@ export async function CreateConnection(path: string): Promise<DatabaseService> {
                 name: collection.name,
                 dateCreated: "",
             };
-            db.prepare(`UPDATE collection SET name = @name WHERE id = @id`).run(dbCollection);
+            db.transaction(() => db.prepare(`UPDATE collection SET name = @name WHERE id = @id`).run(dbCollection))();
             return (await service.getCollection(id))!;
         },
         deleteCollection: async (id: ArchiveCollectionId): Promise<void> => {
-            db.prepare(`UPDATE entry SET collectionId = @defaultId WHERE collectionId = @id`).run({
-                defaultId: DefaultArchiveCollectionId,
-                id
-            });
-            db.prepare(`DELETE FROM collection WHERE id = @id`).run({ id });
+            db.transaction(() => {
+                db.prepare(`UPDATE entry SET collectionId = @defaultId WHERE collectionId = @id`).run({
+                    defaultId: DefaultArchiveCollectionId,
+                    id
+                });
+                db.prepare(`DELETE FROM collection WHERE id = @id`).run({ id });
+            })();
         },
         getCollection: async (id: ArchiveCollectionId): Promise<ArchiveCollection | null> => {
             const results: any = db.prepare(`SELECT * FROM collection WHERE id = @id`).get({ id });
