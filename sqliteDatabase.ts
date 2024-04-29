@@ -85,6 +85,10 @@ export async function CreateConnection(path: string): Promise<DatabaseService> {
             return (await service.getCollection(id))!;
         },
         deleteCollection: async (id: ArchiveCollectionId) => {
+            db.prepare(`UPDATE entry SET collectionId = @defaultId WHERE collectionId = @id`).run({
+                defaultId: DefaultArchiveCollectionId,
+                id
+            });
             db.prepare(`DELETE FROM collection WHERE id = @id`).run({id});
         },
         getCollection: async (id: ArchiveCollectionId) => {
